@@ -23,9 +23,12 @@ get_header();
     global $wpdb;
     $table_name = $wpdb->prefix . 'csr_submissions';
     $constituencies_table = $wpdb->prefix . 'constituencies';
+    $companies_table = $wpdb->prefix . 'companies';
+    $departments_table = $wpdb->prefix . 'departments';
+    $workcategories_table = $wpdb->prefix . 'workcategories';
 
     // Pagination settings
-    $items_per_page = 2;  // Set the number of items per page
+    $items_per_page = 3;  // Set the number of items per page
     $current_page = max(1, get_query_var('paged'));
     $offset = ($current_page - 1) * $items_per_page;
 
@@ -34,17 +37,18 @@ get_header();
         SELECT 
             submissions.csr_id,
             submissions.id,
-            submissions.company,
-            submissions.funding_from,
-            submissions.funding_till,
-            constituencies.name AS constituency_name,
+            companies.name as company_name,
+            departments.name as department_name,
+            constituencies.name as constituency_name,
+            workcategories.name as workcategory_name,
+            submissions.funding_year,
             submissions.mandal,
             submissions.village,
             submissions.name_of_work,
             submissions.csr_fund,
             submissions.expenditure,
             submissions.status,
-            submissions.work_category,
+            
             submissions.date_sanctioned,
             submissions.executive_agency
         FROM 
@@ -53,11 +57,23 @@ get_header();
             $constituencies_table AS constituencies
         ON 
             submissions.constituency_id = constituencies.id
+         INNER JOIN 
+            $companies_table AS companies
+        ON 
+            submissions.company_id = companies.id 
+        INNER JOIN 
+            $departments_table AS departments
+        ON 
+            submissions.department_id = departments.id 
+            INNER JOIN  
+            $workcategories_table AS workcategories
+            ON 
+            submissions.work_category_id = workcategories.id
         ORDER BY 
             submissions.date_sanctioned DESC
         LIMIT %d OFFSET %d
     ", $items_per_page, $offset));
-
+    
     $total_items = $wpdb->get_var("
         SELECT COUNT(*) 
         FROM $table_name AS submissions
@@ -75,8 +91,9 @@ get_header();
                     <th>CSR ID</th>
                     <th>ID</th>
                     <th>Company</th>
-                    <th>Funding From</th>
-                    <th>Funding Till</th>
+                    <th>Department</th>
+                    <th>Funding Year</th>
+                    
                     <th>Constituency</th>
                     <th>Mandal</th>
                     <th>Village</th>
@@ -95,9 +112,9 @@ get_header();
                     <tr>
                         <td><?php echo esc_html($row->csr_id); ?></td>
                         <td><?php echo esc_html($row->id); ?></td>
-                        <td><?php echo esc_html($row->company); ?></td>
-                        <td><?php echo esc_html($row->funding_from); ?></td>
-                        <td><?php echo esc_html($row->funding_till); ?></td>
+                        <td><?php echo esc_html($row->company_name); ?></td>
+                        <td><?php echo esc_html($row->department_name); ?></td>
+                        <td><?php echo esc_html($row->funding_year); ?></td>
                         <td><?php echo esc_html($row->constituency_name); ?></td>
                         <td><?php echo esc_html($row->mandal); ?></td>
                         <td><?php echo esc_html($row->village); ?></td>
@@ -105,8 +122,8 @@ get_header();
                         <td><?php echo esc_html(number_format($row->csr_fund, 0)); ?></td>
                         <td><?php echo esc_html(number_format($row->expenditure, 0)); ?></td>
                         <td><?php echo esc_html($row->status); ?></td>
-                        <td><?php echo esc_html($row->work_category); ?></td>
-                        <td><?php echo esc_html($row->date_sanctioned); ?></td>
+                        <td><?php echo esc_html($row->workcategory_name); ?></td>
+                        <td><?php echo esc_html(date('d-m-Y', strtotime($row->date_sanctioned))); ?></td>
                         <td><?php echo esc_html($row->executive_agency); ?></td>
                         <td><a href="<?php echo esc_url(add_query_arg('action', 'edit', add_query_arg('csr_id', $row->csr_id, home_url('/edit-csr')))); ?>" class="edit-link">Edit</a></td>
                     </tr>
