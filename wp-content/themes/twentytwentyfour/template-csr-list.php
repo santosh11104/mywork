@@ -63,7 +63,7 @@ $query = $wpdb->prepare("
     ON 
         submissions.constituency_id = constituencies.id
     ORDER BY 
-        submissions.csr_id DESC
+        submissions.date_sanctioned DESC
     LIMIT %d OFFSET %d
 ", $items_per_page, $offset);
 
