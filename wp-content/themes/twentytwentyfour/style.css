@@ -13,3 +13,42 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: twentytwentyfour
 Tags: one-column, custom-colors, custom-menu, custom-logo, editor-style, featured-images, full-site-editing, block-patterns, rtl-language-support, sticky-post, threaded-comments, translation-ready, wide-blocks, block-styles, style-variations, accessibility-ready, blog, portfolio, news
 */
+.textarea-like {
+    width: 100%; /* Full width */
+    height: 150px; /* Height similar to a textarea */
+    padding: 10px; /* Padding inside the input */
+    box-sizing: border-box; /* Ensure padding is included in the width */
+    border: 1px solid #ccc; /* Border similar to textarea */
+    border-radius: 4px; /* Rounded corners */
+    font-size: 16px; /* Text size */
+    line-height: 1.5; /* Line height for readability */
+    resize: none; /* Prevent resizing, like a textarea */
+    overflow-y: auto; /* Allow vertical scrolling */
+    display: block; /* Block-level element */
+}
+    .pagination ul {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+    }
+    .pagination ul li {
+        margin: 0 5px;
+    }
+    .pagination ul li a {
+        padding: 8px 12px;
+        background-color: #0073aa;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 3px;
+    }
+    .pagination ul li a:hover {
+        background-color: #005177;
+    }
+    .pagination ul .current {
+        background-color: #333;
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 3px;
+    }
+

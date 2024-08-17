@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 // Check if the user is logged in
 if (!is_user_logged_in()) {
     // Redirect to the login page
-    wp_redirect(wp_login_url(get_permalink())); 
+    wp_redirect(wp_login_url(get_permalink()));
     exit; // Stop further execution
 }
 
@@ -18,12 +18,15 @@ get_header(); ?>
     <h1>Edit CSR Submission</h1>
 
     <?php
-    
-   
+
+
 
     global $wpdb;
     $table_name = $wpdb->prefix . 'csr_submissions';
     $constituencies_table = $wpdb->prefix . 'constituencies';
+    $companies_table = $wpdb->prefix . 'companies';
+    $departments_table = $wpdb->prefix . 'departments';
+    $workcategories_table = $wpdb->prefix . 'workcategories';
 
     // Get record ID from URL
     $record_id = isset($_GET['csr_id']) ? intval($_GET['csr_id']) : 0;
@@ -33,17 +36,17 @@ get_header(); ?>
             SELECT 
                 submissions.csr_id,
                 submissions.id,
-                submissions.company,
-                submissions.funding_from,
-                submissions.funding_till,
-                submissions.constituency_id,
+                submissions.company_id as company_id,
+                submissions.funding_year,
+                submissions.department_id as department_id,
+                submissions.constituency_id as constituency_id,
+                submissions.work_category_id as work_category_id,
                 submissions.mandal,
                 submissions.village,
                 submissions.name_of_work,
                 submissions.csr_fund,
                 submissions.expenditure,
                 submissions.status,
-                submissions.work_category,
                 submissions.date_sanctioned,
                 submissions.executive_agency
             FROM 
@@ -51,33 +54,16 @@ get_header(); ?>
             WHERE 
                 submissions.csr_id = %d
         ", $record_id));
+      //  echo $wpdb->last_query;
 
         if ($submission) {
             $years = range(1950, 2100);
             $yearOptionsFrom = '';
-            $yearOptionsTill = '';
             foreach ($years as $year) {
-                $yearOptionsFrom .= "<option value='{$year}'" . selected($submission->funding_from, $year, false) . ">{$year}</option>";
-                $yearOptionsTill .= "<option value='{$year}'" . selected($submission->funding_till, $year, false) . ">{$year}</option>";
+                $yearOptionsFrom .= "<option value='{$year}'" . selected($submission->funding_year, $year, false) . ">{$year}</option>";
             }
 
-            $workCategories = [
-                'Roads',
-                'Drainage',
-                'Endowments',
-                'Sports',
-                'Sports',
-                'Disaster Management',
-                'Fisheries',
-                'Health',
-                'Sanitation',
-                'Solar',
-                'Plantation'
-            ];
-            $workCategoryOptions = '<option value="" disabled selected>Please select</option>';
-            foreach ($workCategories as $category) {
-                $workCategoryOptions .= "<option value='{$category}'" . selected($submission->work_category, $category, false) . ">{$category}</option>";
-            }
+          
 
             $statusOptions = [
                 'Pending',
@@ -95,7 +81,25 @@ get_header(); ?>
             foreach ($constituencyResults as $constituency) {
                 $constituencyOptions .= "<option value='{$constituency->id}'" . selected($submission->constituency_id, $constituency->id, false) . ">{$constituency->name}</option>";
             }
-            ?>
+
+            $companyOptions = '';
+            $companyResults = $wpdb->get_results("SELECT id, name FROM $companies_table");
+            foreach ($companyResults as $company) {
+                $companyOptions .= "<option value='{$company->id}'" . selected($submission->company_id, $company->id, false) . ">{$company->name}</option>";
+            }
+
+            $departmentOptions = '';
+            $departmentResults = $wpdb->get_results("SELECT id, name FROM $departments_table");
+            foreach ($departmentResults as $department) {
+                $departmentOptions .= "<option value='{$department->id}'" . selected($submission->department_id, $department->id, false) . ">{$department->name}</option>";
+            }
+
+            $workCategoryOptions = '';
+            $workcategoryResults = $wpdb->get_results("SELECT id, name FROM $workcategories_table");
+            foreach ($workcategoryResults as $workcategory) {
+                $workCategoryOptions .= "<option value='{$workcategory->id}'" . selected($submission->workcategory_id, $workcategory->id, false) . ">{$workcategory->name}</option>";
+            }
+    ?>
 
             <form id="editCSRForm" method="POST" action="<?php echo esc_url(admin_url('admin-post.php?action=update_csr_form')); ?>" style="max-width: 800px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
                 <input type="hidden" name="record_id" value="<?php echo esc_attr($record_id); ?>">
@@ -103,20 +107,19 @@ get_header(); ?>
                 <div style="display: flex; flex-wrap: wrap;">
                     <div style="flex: 1; min-width: 300px; margin-right: 20px;">
                         <label for="company" style="display: block; margin-bottom: 8px; font-weight: bold;">Company:</label>
-                        <input type="text" id="company" name="company" value="<?php echo esc_attr($submission->company); ?>" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
-
-                        <label for="funding_from" style="display: block; margin-bottom: 8px; font-weight: bold;">Funding From:</label>
-                        <select id="funding_from" name="funding_from" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
-                            <?php echo $yearOptionsFrom; ?>
+                        <select id="company" name="company" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
+                            <?php echo $companyOptions; ?>
+                        </select>
+                        <label for="department" style="display: block; margin-bottom: 8px; font-weight: bold;">Department:</label>
+                        <select id="department" name="department" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
+                            <?php echo $departmentOptions; ?>
                         </select>
 
-                        <label for="funding_till" style="display: block; margin-bottom: 8px; font-weight: bold;">Funding Till:</label>
-                        <select id="funding_till" name="funding_till" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
-                            <?php echo $yearOptionsTill; ?>
-                        </select>
+                        <label for="funding_year" style="display: block; margin-bottom: 8px; font-weight: bold;">Funding From:</label>
+                        <input type="text" id="funding_year" name="funding_year" value="<?php echo esc_attr($submission->funding_year); ?>" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
 
                         <label for="id" style="display: block; margin-bottom: 8px; font-weight: bold;">IDS:</label>
-                        <input type="number" id="id" name="id" value="<?php echo esc_attr($submission->id); ?>"  required style="width: 100%; padding: 8px; margin-bottom: 20px;">
+                        <input type="number" id="id" name="id" value="<?php echo esc_attr($submission->id); ?>" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
 
                         <label for="constituency" style="display: block; margin-bottom: 8px; font-weight: bold;">Constituency:</label>
                         <select id="constituency" name="constituency" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
@@ -135,10 +138,10 @@ get_header(); ?>
                         <input type="text" id="name_of_work" name="name_of_work" value="<?php echo esc_attr($submission->name_of_work); ?>" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
 
                         <label for="csr_fund" style="display: block; margin-bottom: 8px; font-weight: bold;">CSR Fund:</label>
-                        <input type="number"   id="csr_fund" name="csr_fund" value="<?php echo esc_attr(intval($submission->csr_fund)); ?>" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
+                        <input type="number" id="csr_fund" name="csr_fund" value="<?php echo esc_attr(intval($submission->csr_fund)); ?>" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
 
                         <label for="expenditure" style="display: block; margin-bottom: 8px; font-weight: bold;">Expenditure:</label>
-                        <input type="number"   id="expenditure" name="expenditure" value="<?php echo esc_attr(intval($submission->expenditure)); ?>" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
+                        <input type="number" id="expenditure" name="expenditure" value="<?php echo esc_attr(intval($submission->expenditure)); ?>" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
 
                         <label for="status" style="display: block; margin-bottom: 8px; font-weight: bold;">Status:</label>
                         <select id="status" name="status" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
@@ -163,7 +166,7 @@ get_header(); ?>
                 </div>
             </form>
 
-            <?php
+    <?php
         } else {
             echo "<p>Invalid CSR Submission ID.</p>";
         }
