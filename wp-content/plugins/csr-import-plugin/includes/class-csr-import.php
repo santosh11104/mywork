@@ -1,5 +1,4 @@
 <?php
-
 class CSR_Import {
     private static $instance = null;
 
@@ -50,6 +49,17 @@ class CSR_Import {
         global $wpdb;
 
         foreach ($data as $row) {
+            // Normalize keys to lowercase and trim spaces
+            $row = array_change_key_case(array_map('trim', $row), CASE_LOWER);
+
+            // Escape special characters
+            $row = array_map([$this, 'escape_special_chars'], $row);
+
+            // Debug: Print the row data
+           /* echo '<pre>';
+            print_r($row);
+            echo '</pre>';*/
+
             // Validate required fields
             $errors = $this->validate_row($row);
             if (!empty($errors)) {
@@ -57,14 +67,14 @@ class CSR_Import {
                 continue;
             }
 
-            // Map each CSV field to its respective table.
+            // Map each CSV field to its respective table
             $company_id = $this->get_mapped_id($wpdb, 'wp_companies', $row['company']);
             $constituency_id = $this->get_mapped_id($wpdb, 'wp_constituencies', $row['constituency']);
-            $work_category_id = $this->get_mapped_id($wpdb, 'wp_work_categories', $row['work_category']);
-            $department_id = $this->get_mapped_id($wpdb, 'wp_departments', $row['department']);
+            $work_category_id = $this->get_mapped_id($wpdb, 'wp_workcategories', $row['workcategory']);
+            $department_id = $row['department'] ? $this->get_mapped_id($wpdb, 'wp_departments', $row['department']) : null;
 
             // Insert data into the database
-            $wpdb->insert('wp_csr_submissions', [
+            $result = $wpdb->insert('wp_csr_submissions', [
                 'id' => $row['id'],
                 'company_id' => $company_id,
                 'funding_year' => $row['funding_year'],
@@ -80,65 +90,69 @@ class CSR_Import {
                 'executive_agency' => $row['executive_agency'],
                 'department_id' => $department_id
             ]);
+
+            if ($result === false) {
+                echo '<div class="notice notice-error is-dismissible"><p>Failed to insert data for row with ID: ' . $row['id'] . '</p></div>';
+            }
         }
 
         echo '<div class="notice notice-success is-dismissible"><p>Data Imported Successfully!</p></div>';
     }
 
+    private function escape_special_chars($value) {
+        global $wpdb;
+        // Escapes single quotes and other special characters
+        return $wpdb->_escape($value);
+    }
+
     private function validate_row($row) {
         $errors = [];
-    
-        // Required fields validation
+
+        if (empty($row['company'])) {
+            $errors[] = 'Company is required.';
+        }
+        if (empty($row['department'])) {
+            $errors[] = 'Department is required.';
+        }
+
         $required_fields = [
-            'id', 'company_id', 'funding_year', 'constituency', 'mandal', 
-            'village', 'name_of_work', 'csr_fund', 'expenditure', 'status', 
-            'work_category_id', 'date_sanctioned', 'executive_agency', 'department_id'
+            'company', 'workcategory', 'department', 'executive_agency', 'name_of_work', 
+            'funding_year', 'id', 'constituency', 'mandal', 'village', 'csr_fund', 
+            'date_sanctioned', 'expenditure', 'status'
         ];
-       
 
         foreach ($required_fields as $field) {
             if (empty($row[$field])) {
                 $errors[] = ucfirst(str_replace('_', ' ', $field)) . ' is required.';
             }
         }
-    
-        // Numeric validation for fund and expenditure
+
         if (!empty($row['csr_fund']) && !is_numeric($row['csr_fund'])) {
             $errors[] = 'CSR Fund must be a valid number.';
         }
-    
-        if (!empty($row['expenditure']) && !is_numeric($row['expenditure'])) {
-            $errors[] = 'Expenditure must be a valid number.';
+
+        // Expenditure validation: must be numeric and not less than 0
+        if (!isset($row['expenditure']) || !is_numeric($row['expenditure']) || $row['expenditure'] < 0) {
+            $errors[] = 'Expenditure must be a valid number and cannot be less than 0.';
         }
-    
-        // Date validation for date_sanctioned
+
         if (!empty($row['date_sanctioned']) && !$this->validate_date_format($row['date_sanctioned'], 'd-m-Y')) {
             $errors[] = 'Date Sanctioned must be a valid date in the format dd-mm-yyyy.';
         }
-    
+
         return $errors;
     }
 
-    private function process_row($wpdb, $row) {
-        // Convert and map company_id, work_category_id, and department_id
-        $row['company_id'] = $this->get_mapped_id($wpdb, 'wp_companies', $row['company_id']);
-        $row['work_category_id'] = $this->get_mapped_id($wpdb, 'wp_work_categories', $row['work_category_id']);
-        $row['department_id'] = $this->get_mapped_id($wpdb, 'wp_departments', $row['department_id']);
-        
-        // Convert date_sanctioned to YYYY-MM-DD
-        $row['date_sanctioned'] = $this->convert_date_format($row['date_sanctioned'], 'd-m-Y', 'Y-m-d');
-        
-        // Insert the row into the database
-        $wpdb->insert('wp_csr_submissions', $row);
-    }
-    
     private function validate_date_format($date, $format = 'Y-m-d') {
         $d = DateTime::createFromFormat($format, $date);
         return $d && $d->format($format) === $date;
     }
-    
-    private function convert_date_format($date, $from_format = 'd-m-Y', $to_format = 'Y-m-d') {
-        $d = DateTime::createFromFormat($from_format, $date);
-        return $d ? $d->format($to_format) : false;
+
+    private function get_mapped_id($wpdb, $table, $value) {
+        $id = $wpdb->get_var($wpdb->prepare("SELECT id FROM $table WHERE name = %s", $value));
+        if (!$id) {
+            echo '<div class="notice notice-error is-dismissible"><p>No matching record found in ' . $table . ' for value: ' . $value . '</p></div>';
+        }
+        return $id;
     }
 }
