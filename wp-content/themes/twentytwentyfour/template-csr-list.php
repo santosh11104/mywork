@@ -28,7 +28,7 @@ get_header();
     $workcategories_table = $wpdb->prefix . 'workcategories';
 
     // Pagination settings
-    $items_per_page = 3;  // Set the number of items per page
+    $items_per_page = 10;  // Set the number of items per page
     $current_page = max(1, get_query_var('paged'));
     $offset = ($current_page - 1) * $items_per_page;
 
