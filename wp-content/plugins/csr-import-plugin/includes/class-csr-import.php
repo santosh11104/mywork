@@ -58,7 +58,9 @@ class CSR_Import
             $row = array_change_key_case(array_map('trim', $row), CASE_LOWER);
     
             // Escape special characters
+            
             $row = array_map([$this, 'escape_special_chars'], $row);
+        
     
             // Validate required fields
             $errors = $this->validate_row($row);
@@ -68,11 +70,11 @@ class CSR_Import
             }
     
             // Map each CSV field to its respective table
-            $company_id = $this->get_mapped_id($wpdb, 'wp_companies', $row['company']);
-            $constituency_id = $this->get_mapped_id($wpdb, 'wp_constituencies', $row['constituency']);
-            $work_category_id = $this->get_mapped_id($wpdb, 'wp_workcategories', $row['workcategory']);
-            $department_id = $row['department'] ? $this->get_mapped_id($wpdb, 'wp_departments', $row['department']) : null;
-            $mandal_id = $row['mandal'] ? $this->get_mapped_id($wpdb, 'wp_mandals', $row['mandal']) : null;
+            $company_id = $this->get_mapped_id($wpdb, $wpdb->prefix . 'companies', $row['company']);
+            $constituency_id = $this->get_mapped_id($wpdb, $wpdb->prefix . 'constituencies', $row['constituency']);
+            $work_category_id = $this->get_mapped_id($wpdb, $wpdb->prefix . 'workcategories', $row['workcategory']);
+            $department_id = $row['department'] ? $this->get_mapped_id($wpdb, $wpdb->prefix . 'departments', $row['department']) : null;
+            $mandal_id = $row['mandal'] ? $this->get_mapped_id($wpdb, $wpdb->prefix . 'mandals', $row['mandal']) : null;
 
             $current_user_id = get_current_user_id();
             $date_parts = explode('/', $row['date_sanctioned']); // Splitting the date by "-"
@@ -82,25 +84,28 @@ class CSR_Import
             }
             // Insert data into the database
             $result = $wpdb->insert('wp_csr_submissions', [
-                'id' => $row['id'],
-                'company_id' => $company_id,
+                'id' => intval($row['id']),
+                'company_id' => intval($company_id),
                 'funding_year' => $row['funding_year'],
-                'constituency_id' => $constituency_id,
-                'mandal_id' => $mandal_id,
-                'village' => $row['village'],
-                'name_of_work' => $row['name_of_work'],
-                'csr_fund' => $row['csr_fund'],
-                'expenditure' => $row['expenditure'],
+                'constituency_id' => intval($constituency_id),
+                'mandal_id' => intval($mandal_id),
+                'village' => sanitize_text_field($row['village']),
+                'name_of_work' => sanitize_text_field($row['name_of_work']),
+                'csr_fund' => floatval($row['csr_fund']),
+                'expenditure' => floatval($row['expenditure']),
                 'status' => $row['status'],
-                'work_category_id' => $work_category_id,
+                'work_category_id' => intval($work_category_id),
                 'date_sanctioned' => $date_sanctioned,
-                'executive_agency' => $row['executive_agency'],
-                'department_id' => $department_id,
+                'executive_agency' => sanitize_text_field($row['executive_agency']),
+                'department_id' => intval($department_id),
                 'createdBy' => $current_user_id,
                 'modifiedBy' => $current_user_id
             ]);
-    
+           // echo $wpdb->last_query;
+            
             if ($result === false) {
+                  
+                 
                 // Display an error message with the ID of the failed row
                 echo '<div class="notice notice-error is-dismissible"><p>Failed to insert data for row with ID: ' . $row['id'] . '</p></div>';
             }

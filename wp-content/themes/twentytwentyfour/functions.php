@@ -393,7 +393,7 @@ function handle_csr_form()
         $company = intval($_POST['company']);
         $funding_year = intval($_POST['funding_year']);
          
-        $id = sanitize_text_field($_POST['id']);
+        $id = intval($_POST['id']);
         $constituency = intval($_POST['constituency']); // Sanitize as an integer
         $department = intval($_POST['department']); // Sanitize as an integer
         $constituency = intval($_POST['constituency']); // Sanitize as an integer
@@ -655,6 +655,9 @@ function my_custom_links_page()
     echo '<li><a href="' . WP_SITEURL . '/add-csr-works"  >Add CSR Form</a></li>';
     echo '<li><a href="' . WP_SITEURL . '/add-constituency"  >Add Constituency</a></li>';
     echo '<li><a href="' . WP_SITEURL . '/add-company"  >Add Company</a></li>';
+    echo '<li><a href="' . WP_SITEURL . '/add-departments"  >Add Department</a></li>';
+    echo '<li><a href="' . WP_SITEURL . '/add-mandal"  >Add Mandal</a></li>';
+    echo '<li><a href="' . WP_SITEURL . '/add-workcategory"  >Add Work Category</a></li>';
 
     echo '</ul>';
     echo '</div>';
