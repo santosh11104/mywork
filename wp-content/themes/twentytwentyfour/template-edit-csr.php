@@ -27,6 +27,7 @@ get_header(); ?>
     $companies_table = $wpdb->prefix . 'companies';
     $departments_table = $wpdb->prefix . 'departments';
     $workcategories_table = $wpdb->prefix . 'workcategories';
+    $mandals_table = $wpdb->prefix . 'mandals';
 
     // Get record ID from URL
     $record_id = isset($_GET['csr_id']) ? intval($_GET['csr_id']) : 0;
@@ -41,7 +42,7 @@ get_header(); ?>
                 submissions.department_id as department_id,
                 submissions.constituency_id as constituency_id,
                 submissions.work_category_id as work_category_id,
-                submissions.mandal,
+                submissions.mandal_id as mandal_id,
                 submissions.village,
                 submissions.name_of_work,
                 submissions.csr_fund,
@@ -66,11 +67,11 @@ get_header(); ?>
           
 
             $statusOptions = [
-                'Pending',
-                'In Progress',
                 'Completed',
-                'Cancelled'
+                'In Progress',
+                'Not Started',
             ];
+
             $statusDropdownOptions = '<option value="" disabled selected>Please select</option>';
             foreach ($statusOptions as $status) {
                 $statusDropdownOptions .= "<option value='{$status}'" . selected($submission->status, $status, false) . ">{$status}</option>";
@@ -99,6 +100,11 @@ get_header(); ?>
             foreach ($workcategoryResults as $workcategory) {
                 $workCategoryOptions .= "<option value='{$workcategory->id}'" . selected($submission->workcategory_id, $workcategory->id, false) . ">{$workcategory->name}</option>";
             }
+            $mandalOptions = '';
+            $mandalResults = $wpdb->get_results("SELECT id, name FROM $mandals_table");
+            foreach ($mandalResults as $mandal) {
+                $mandalOptions .= "<option value='{$mandal->id}'" . selected($submission->mandal_id, $mandal->id, false) . ">{$mandal->name}</option>";
+            }
     ?>
 
             <form id="editCSRForm" method="POST" action="<?php echo esc_url(admin_url('admin-post.php?action=update_csr_form')); ?>" style="max-width: 800px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
@@ -126,8 +132,11 @@ get_header(); ?>
                             <?php echo $constituencyOptions; ?>
                         </select>
 
-                        <label for="mandal" style="display: block; margin-bottom: 8px; font-weight: bold;">Mandal:</label>
-                        <input type="text" id="mandal" name="mandal" value="<?php echo esc_attr($submission->mandal); ?>" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
+                        
+                        <label for="mandal" style="display: block; margin-bottom: 8px; font-weight: bold;">Mandals:</label>
+                        <select id="mandal" name="mandal" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
+                            <?php echo $mandalOptions; ?>
+                        </select>
 
                         <label for="village" style="display: block; margin-bottom: 8px; font-weight: bold;">Village:</label>
                         <input type="text" id="village" name="village" value="<?php echo esc_attr($submission->village); ?>" required style="width: 100%; padding: 8px; margin-bottom: 20px;">

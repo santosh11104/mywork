@@ -72,23 +72,32 @@ class CSR_Import
             $constituency_id = $this->get_mapped_id($wpdb, 'wp_constituencies', $row['constituency']);
             $work_category_id = $this->get_mapped_id($wpdb, 'wp_workcategories', $row['workcategory']);
             $department_id = $row['department'] ? $this->get_mapped_id($wpdb, 'wp_departments', $row['department']) : null;
-    
+            $mandal_id = $row['mandal'] ? $this->get_mapped_id($wpdb, 'wp_mandals', $row['mandal']) : null;
+
+            $current_user_id = get_current_user_id();
+            $date_parts = explode('/', $row['date_sanctioned']); // Splitting the date by "-"
+
+            if (count($date_parts) === 3) {
+                $date_sanctioned = $date_parts[2] . '-' . $date_parts[1] . '-' . $date_parts[0];
+            }
             // Insert data into the database
             $result = $wpdb->insert('wp_csr_submissions', [
                 'id' => $row['id'],
                 'company_id' => $company_id,
                 'funding_year' => $row['funding_year'],
                 'constituency_id' => $constituency_id,
-                'mandal' => $row['mandal'],
+                'mandal' => $mandal_id,
                 'village' => $row['village'],
                 'name_of_work' => $row['name_of_work'],
                 'csr_fund' => $row['csr_fund'],
                 'expenditure' => $row['expenditure'],
                 'status' => $row['status'],
                 'work_category_id' => $work_category_id,
-                'date_sanctioned' => $row['date_sanctioned'],
+                'date_sanctioned' => $date_sanctioned,
                 'executive_agency' => $row['executive_agency'],
-                'department_id' => $department_id
+                'department_id' => $department_id,
+                'createdBy' => $current_user_id,
+                'modifiedBy' => $current_user_id
             ]);
     
             if ($result === false) {
@@ -145,8 +154,8 @@ class CSR_Import
             $errors[] = 'Expenditure must be a valid number and cannot be less than 0.';
         }
     
-        if (!empty($row['date_sanctioned']) && !$this->validate_date_format($row['date_sanctioned'], 'd-m-Y')) {
-            $errors[] = 'The Date Sanctioned must be a valid date in the format dd-mm-yyyy in the uploaded file with ID '. $row['id'];
+        if (!empty($row['date_sanctioned']) && !$this->validate_date_format($row['date_sanctioned'], 'd/m/Y')) {
+            $errors[] = 'The Date Sanctioned must be a valid date in the format dd/mm/yyyy in the uploaded file with ID '. $row['id'];
         }
     
         return $errors;

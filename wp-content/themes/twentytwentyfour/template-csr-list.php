@@ -26,6 +26,7 @@ get_header();
     $companies_table = $wpdb->prefix . 'companies';
     $departments_table = $wpdb->prefix . 'departments';
     $workcategories_table = $wpdb->prefix . 'workcategories';
+    $mandals_table = $wpdb->prefix . 'mandals';
 
     // Pagination settings
     $items_per_page = 10;  // Set the number of items per page
@@ -42,13 +43,12 @@ get_header();
             constituencies.name as constituency_name,
             workcategories.name as workcategory_name,
             submissions.funding_year,
-            submissions.mandal,
+             mandals.name as mandal_name,
             submissions.village,
             submissions.name_of_work,
             submissions.csr_fund,
             submissions.expenditure,
             submissions.status,
-            
             submissions.date_sanctioned,
             submissions.executive_agency
         FROM 
@@ -61,6 +61,10 @@ get_header();
             $companies_table AS companies
         ON 
             submissions.company_id = companies.id 
+  INNER JOIN 
+            $mandals_table AS mandals
+        ON 
+            submissions.mandal_id = mandals.id             
         INNER JOIN 
             $departments_table AS departments
         ON 
@@ -116,6 +120,7 @@ get_header();
                         <td><?php echo esc_html($row->department_name); ?></td>
                         <td><?php echo esc_html($row->funding_year); ?></td>
                         <td><?php echo esc_html($row->constituency_name); ?></td>
+                        <td><?php echo esc_html($row->mandal_name); ?></td>                        
                         <td><?php echo esc_html($row->mandal); ?></td>
                         <td><?php echo esc_html($row->village); ?></td>
                         <td><?php echo esc_html($row->name_of_work); ?></td>

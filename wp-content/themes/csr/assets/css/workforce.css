@@ -1,0 +1,332 @@
+/*Fonts*/
+ul, ol, li, p, span, b, svg, a {
+  margin: 0px;
+  padding: 0px;
+  transition: 0.5s;
+  text-decoration: none;
+}
+
+.workforce-banner {
+  position: relative;
+}
+.workforce-banner .desktop {
+  display: block;
+}
+@media (max-width: 575.98px) {
+  .workforce-banner .desktop {
+    display: none;
+  }
+}
+.workforce-banner .mobile {
+  display: none;
+}
+@media (max-width: 575.98px) {
+  .workforce-banner .mobile {
+    display: block;
+    width: 100%;
+  }
+}
+.workforce-banner .banner-text {
+  position: absolute;
+  top: 25%;
+  color: #fff;
+}
+@media (max-width: 575.98px) {
+  .workforce-banner .banner-text {
+    top: 15%;
+  }
+}
+.workforce-banner .banner-text p {
+  color: #D94265;
+  font-size: 1.8rem;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  line-height: 150%;
+}
+@media (max-width: 575.98px) {
+  .workforce-banner .banner-text p {
+    font-size: 1.4rem;
+  }
+}
+.workforce-banner .banner-text p.tagline {
+  color: #fff;
+  font-size: 2rem;
+  font-family: "Inter", sans-serif;
+  font-weight: normal;
+}
+@media (max-width: 575.98px) {
+  .workforce-banner .banner-text p.tagline {
+    font-size: 1.6rem;
+  }
+}
+.workforce-banner .banner-text h1 {
+  font-size: 5.6rem;
+  width: 80%;
+  font-family: "Inter", sans-serif;
+  font-weight: bold;
+  line-height: 125%;
+  margin-bottom: 1.6rem;
+}
+@media (max-width: 575.98px) {
+  .workforce-banner .banner-text h1 {
+    font-size: 3.2rem;
+  }
+}
+.workforce-banner .banner-text .contact-link {
+  color: #fff;
+  margin-top: 4rem;
+  background: #D94265;
+  border-radius: 0.4rem;
+  padding: 1.2rem 1.6rem 1.2rem 2.4rem;
+  display: inline-block;
+}
+
+.about-block {
+  color: #fff;
+  background: #000;
+}
+.about-block h1 {
+  font-size: 4rem;
+  line-height: 120%;
+  font-family: "Inter", sans-serif;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  width: 80%;
+}
+@media (max-width: 575.98px) {
+  .about-block h1 {
+    font-size: 2.8rem;
+  }
+}
+.about-block p {
+  color: #D7D7D7;
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+  font-family: "Inter", sans-serif;
+  font-weight: normal;
+  line-height: 160%;
+  width: 90%;
+}
+@media (max-width: 575.98px) {
+  .about-block p {
+    font-size: 1.6rem;
+  }
+}
+.about-block .solutions-list {
+  background: #17171C;
+  padding: 5rem;
+}
+.about-block .solutions-list ul li {
+  background: url("../images/workforce-solutions/soultions-list-icon.png") no-repeat;
+  padding: 0.5rem 0 5rem 5.5rem;
+  list-style: none;
+  margin: 0;
+}
+
+.clients-block {
+  font-size: 3.6rem;
+  line-height: 125%;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+}
+@media (max-width: 575.98px) {
+  .clients-block {
+    font-size: 2.4rem;
+  }
+}
+
+.section-padding {
+  padding: 6rem 0;
+}
+
+.owl-dots {
+  text-align: center;
+  margin-top: 4%;
+}
+
+.owl-dot {
+  display: inline-block;
+  height: 1.5rem !important;
+  width: 1.5rem !important;
+  background-color: #878787 !important;
+  opacity: 0.8;
+  border-radius: 50%;
+  margin: 0 0.5rem;
+}
+
+.owl-dot.active {
+  background-color: #000 !important;
+}
+
+.section-heading {
+  font-size: 3.6rem;
+  font-family: "Inter", sans-serif;
+  font-weight: bold;
+  line-height: 125%;
+}
+@media (max-width: 575.98px) {
+  .section-heading {
+    font-size: 2.4rem;
+  }
+}
+
+.offerings-block {
+  background: #000;
+  position: relative;
+  color: #fff;
+}
+.offerings-block p,
+.offerings-block h1,
+.offerings-block h2 {
+  margin-bottom: 1.6rem;
+}
+.offerings-block .top-content {
+  width: 50%;
+  margin-bottom: 5rem;
+}
+@media (max-width: 767.98px) {
+  .offerings-block .top-content {
+    width: 100%;
+  }
+}
+.offerings-block h2 {
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 2.2rem;
+}
+.offerings-block .it-roles {
+  margin-bottom: 5rem;
+}
+.offerings-block .see-more {
+  text-decoration: underline;
+  color: #D94265;
+  line-height: 1.9rem;
+}
+
+.process-block .our-process {
+  color: #6A6A6A;
+  line-height: 160%;
+  font-size: 1.8rem;
+  width: 50%;
+  margin-bottom: 5rem;
+}
+@media (max-width: 767.98px) {
+  .process-block .our-process {
+    width: 100%;
+  }
+}
+@media (max-width: 575.98px) {
+  .process-block .our-process {
+    font-size: 1.4rem;
+  }
+}
+.process-block .accordion {
+  width: 100%;
+  max-width: 53rem;
+  background-color: #fff;
+  border-radius: 0.8rem;
+}
+@media (max-width: 767.98px) {
+  .process-block .accordion {
+    margin-bottom: 5rem;
+  }
+}
+.process-block .accordion h2 {
+  text-align: center;
+}
+.process-block .accordion .accordion-content {
+  background: linear-gradient(283.77deg, #F6F6F8 0%, #FCFCFD 100%);
+  border: 1px solid #E1E1E1;
+  border-radius: 0.4rem;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+.process-block .accordion-content.open {
+  padding-bottom: 1rem;
+}
+.process-block .accordion-content .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 5rem;
+  padding: 0 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s linear;
+}
+.process-block .accordion-content.open header {
+  min-height: 5rem;
+}
+.process-block .accordion-content .description {
+  height: 0;
+  padding: 0 1.5rem;
+  transition: all 0.3s linear;
+  line-height: 160%;
+  font-size: 1.6rem;
+}
+.process-block .accordion-content .title {
+  font-size: 2.2rem;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  padding: 1rem 0;
+  line-height: 125%;
+}
+
+.member-block {
+  position: relative;
+}
+.member-block .center-block {
+  background: #17171C;
+  padding: 5rem;
+  width: 80%;
+  margin: 0 auto;
+  color: #fff;
+}
+.member-block .center-block p {
+  width: 80%;
+  text-align: center;
+  font-size: 3.6rem;
+  line-height: 135%;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  margin: 1.6rem auto;
+}
+.member-block .center-block p span {
+  color: #D94265;
+}
+.member-block .member-imgs {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+.member-block .member-imgs img {
+  margin: 1rem 2rem;
+}
+@media (max-width: 767.98px) {
+  .member-block .member-imgs {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.dots-img {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+@media (max-width: 767.98px) {
+  .dots-img {
+    display: none;
+  }
+}
+.dots-img.img-bottom {
+  bottom: 0;
+  left: 0;
+  top: auto;
+}
+@media (max-width: 767.98px) {
+  .dots-img.img-bottom {
+    display: none;
+  }
+}
+
+/*# sourceMappingURL=workforce.css.map */

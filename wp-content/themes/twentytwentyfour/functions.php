@@ -257,11 +257,16 @@ function display_submission_form()
         $departmentOptions .= "<option value='{$department->id}'>{$department->name}</option>";
     }
 
+    $mandals = $wpdb->get_results("SELECT id, name FROM {$wpdb->prefix}mandals ORDER BY name ASC");
+    $mandalOptions = '<option value="" disabled selected>Please select</option>';
+    foreach ($mandals as $mandal) {
+        $mandalOptions .= "<option value='{$mandal->id}'>{$mandal->name}</option>";
+    }
+
     $statusOptions = [
-        'Pending',
-        'In Progress',
         'Completed',
-        'Cancelled'
+        'In Progress',
+        'Not Started',
     ];
     $statusDropdownOptions = '<option value="" disabled selected>Please select</option>';
     foreach ($statusOptions as $status) {
@@ -303,18 +308,15 @@ function display_submission_form()
                 <select id="department" name="department" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
                     ' . $departmentOptions . '
                 </select>
+                 <label for="mandal" style="display: block; margin-bottom: 8px; font-weight: bold;">Mandals:</label>
+                <select id="mandal" name="mandal" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
+                    ' . $mandalOptions . '
+                </select>
             </div>
 
             <div style="flex: 1; min-width: 300px;">
                <label for="name_of_work" style="display: block; margin-bottom: 8px; font-weight: bold;">Name of Work:</label>
                 <input type="text" id="name_of_work" class="textarea-like" name="name_of_work" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
-
-                
-
-                <label for="mandal" style="display: block; margin-bottom: 8px; font-weight: bold;">Mandal:</label>
-                <input type="text" id="mandal" name="mandal" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
-                
-             
                 
                 <label for="expenditure" style="display: block; margin-bottom: 8px; font-weight: bold;">Expenditure:</label>
                 <input type="number" id="expenditure" name="expenditure" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
@@ -349,7 +351,9 @@ function display_submission_form()
 
         // Initialize the date picker
         $("#date_sanctioned").datepicker({
-            dateFormat: "dd-mm-yy"
+            dateFormat: "dd/mm/yy",  // Ensure this matches the display format
+        changeMonth: true,
+        changeYear: true
         });
     });
     </script>';
@@ -380,7 +384,7 @@ function handle_csr_form()
         wp_redirect(home_url('/login')); // Redirect to login page if not logged in
         exit;
     }
-
+    $current_user_id = get_current_user_id();
     // Check if the request is POST
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         global $wpdb;
@@ -393,7 +397,7 @@ function handle_csr_form()
         $constituency = intval($_POST['constituency']); // Sanitize as an integer
         $department = intval($_POST['department']); // Sanitize as an integer
         $constituency = intval($_POST['constituency']); // Sanitize as an integer
-        $mandal = sanitize_text_field($_POST['mandal']);
+        $mandal = intval($_POST['mandal']); // Sanitize as an integer
         $village = sanitize_text_field($_POST['village']);
         $name_of_work = sanitize_text_field($_POST['name_of_work']);
         $csr_fund = floatval($_POST['csr_fund']);
@@ -401,7 +405,7 @@ function handle_csr_form()
         $status = sanitize_text_field($_POST['status']);
         $date_sanctioned = sanitize_text_field($_POST['date_sanctioned']);
         $executive_agency = sanitize_text_field($_POST['executive_agency']);
-        $date_parts = explode('-', $date_sanctioned); // Splitting the date by "-"
+        $date_parts = explode('/', $date_sanctioned); // Splitting the date by "-"
 
         if (count($date_parts) === 3) {
             $date_sanctioned = $date_parts[2] . '-' . $date_parts[1] . '-' . $date_parts[0];
@@ -423,7 +427,7 @@ function handle_csr_form()
             'id' => $id,
             'constituency_id' => $constituency,
             'department_id' => $department,
-            'mandal' => $mandal,
+            'mandal_id' => $mandal,
             'village' => $village,
             'name_of_work' => $name_of_work,
             'csr_fund' => $csr_fund,
@@ -431,12 +435,14 @@ function handle_csr_form()
             'status' => $status,
             'date_sanctioned' => $date_sanctioned,
             'work_category_id' => $work_category,
-            'executive_agency' => $executive_agency
+            'executive_agency' => $executive_agency,
+            'createdBy' => $current_user_id,
+            'modifiedBy' => $current_user_id
         ]);
-       // echo $wpdb->last_query;
-        //exit;
+        
         // Check if the insert was successful
         if ($result !== false) {
+            
             // Redirect to the same page with a success message
             wp_redirect(add_query_arg('submission_status', 'success', home_url('/csr-submissions-list')));
             exit;
@@ -529,16 +535,20 @@ function create_csr_submissions_table()
         company_id INT UNSIGNED NOT NULL,
         funding_year varchar(64) NOT NULL,
         constituency_id INT UNSIGNED NOT NULL,
-        mandal VARCHAR(255) NOT NULL,
+        mandal_id INT UNSIGNED NOT NULL,
         village VARCHAR(255) NOT NULL,
         name_of_work TEXT NOT NULL,
         csr_fund DECIMAL(10, 2)  NULL,
         expenditure DECIMAL(10, 2) NULL,
-        `status` VARCHAR(50) NOT NULL,
+       `status` VARCHAR(50) NOT NULL,
         work_category_id INT UNSIGNED NOT NULL,
         date_sanctioned DATE NOT NULL,
         executive_agency varchar(255) NOT NULL,
         department_id INT UNSIGNED NOT NULL,
+        `createDate` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `modifiedDate` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        `createdBy` int(10) unsigned NOT NULL,
+         `modifiedBy` int(10) unsigned DEFAULT NULL,
 
         PRIMARY KEY (csr_id)
     ) $charset_collate;";
@@ -568,7 +578,7 @@ function update_csr_form()
         $funding_year = intval($_POST['funding_year']);
         
         $constituency_id = intval($_POST['constituency']);
-        $mandal = sanitize_text_field($_POST['mandal']);
+        $mandal = intval($_POST['mandal']);
         $village = sanitize_text_field($_POST['village']);
         $name_of_work = sanitize_text_field($_POST['name_of_work']);
         $csr_fund = floatval($_POST['csr_fund']);
@@ -586,7 +596,7 @@ function update_csr_form()
                 'funding_year' => $funding_year,
                 
                 'constituency_id' => $constituency_id,
-                'mandal' => $mandal,
+                'mandal_id' => $mandal,
                 'village' => $village,
                 'name_of_work' => $name_of_work,
                 'csr_fund' => $csr_fund,
@@ -854,3 +864,71 @@ function create_departments_table()
 
 
 add_action('after_setup_theme', 'create_departments_table');
+
+function display_add_mandal_form()
+{
+    $form = '<form method="POST" action="' . admin_url('admin-post.php?action=add_mandal') . '" style="max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
+        <h2>Add New mandal</h2>
+        <label for="mandal_name" style="display: block; margin-bottom: 8px; font-weight: bold;">Constituency Name:</label>
+        <input type="text" id="mandal_name" name="mandal_name" required style="width: 100%; padding: 8px; margin-bottom: 20px;">
+        
+        <input type="submit" value="Add mandal" style="padding: 10px 20px; font-size: 16px; border: none; background-color: #0073aa; color: white; border-radius: 5px; cursor: pointer;">
+    </form>';
+
+    return $form;
+}
+add_shortcode('add_mandal_form', 'display_add_mandal_form');
+
+
+function handle_add_mandal()
+{
+    // Check if the user is logged in
+    if (!is_user_logged_in()) {
+        wp_redirect(home_url('/login')); // Redirect to login page if not logged in
+        exit;
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        global $wpdb;
+        $mandal_name = sanitize_text_field($_POST['mandal_name']);
+
+        // Insert the new mandal into the database
+        $table = $wpdb->prefix . 'mandals';
+        $result = $wpdb->insert($table, ['name' => $mandal_name]);
+
+        // Redirect based on the result
+        if ($result) {
+            wp_redirect(home_url('/'));
+        } else {
+            wp_redirect(home_url('/form-submission-error?message=db_error'));
+        }
+        exit;
+    } else {
+        wp_die('Invalid request.');
+    }
+}
+
+add_action('admin_post_add_mandal', 'handle_add_mandal');
+add_action('admin_post_nopriv_add_mandal', 'handle_add_mandal');
+
+function create_mandals_table()
+{
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'mandals';
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        name VARCHAR(255) NOT NULL,
+        PRIMARY KEY (id)
+    ) $charset_collate;";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+}
+
+
+
+
+add_action('after_setup_theme', 'create_mandals_table');
