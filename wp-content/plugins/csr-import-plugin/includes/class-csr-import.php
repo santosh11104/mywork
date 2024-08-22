@@ -86,7 +86,7 @@ class CSR_Import
                 'company_id' => $company_id,
                 'funding_year' => $row['funding_year'],
                 'constituency_id' => $constituency_id,
-                'mandal' => $mandal_id,
+                'mandal_id' => $mandal_id,
                 'village' => $row['village'],
                 'name_of_work' => $row['name_of_work'],
                 'csr_fund' => $row['csr_fund'],
